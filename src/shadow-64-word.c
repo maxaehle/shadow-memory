@@ -10,8 +10,8 @@ Low* word_copy_for_writing(Low* dist_Low) {
 }
 
 INLINE
-Low* word_get_Low_for_reading(ShadowMap *PM, Addr a) {
-  SizeT idx = a >> 35;
+Low* word_get_Low_for_reading(ShadowMap *PM, SM_Addr a) {
+  SM_SizeT idx = a >> 35;
   assert(idx < 536870912);
   MiddleLowPtr ml = BITS(PM)[idx];
   if (ml.l == DMAP(PM))
@@ -22,13 +22,13 @@ Low* word_get_Low_for_reading(ShadowMap *PM, Addr a) {
 }
 
 INLINE
-Low* word_get_Low_for_writing(ShadowMap *PM, Addr a) {
+Low* word_get_Low_for_writing(ShadowMap *PM, SM_Addr a) {
   MiddleLowPtr* ml = &(BITS(PM)[a >> 35]);
   if (ml->l == DMAP(PM)) {
     ml->m = (Middle*)shadow_malloc(sizeof(Middle));
     memcpy(ml->m, PM->distinguished_middle, sizeof(Middle));
   }
-  SizeT idx = (a & MIDDLE_BITS) >> 18;
+  SM_SizeT idx = (a & MIDDLE_BITS) >> 18;
   assert(idx < 131072);
   Low** low = &(ml->m->bits[idx]);
   if (*low == DMAP(PM))
@@ -37,27 +37,27 @@ Low* word_get_Low_for_writing(ShadowMap *PM, Addr a) {
 }
 
 INLINE
-void shadow_word_get_bits(ShadowMap *PM, Addr a, U64* mbits) {
+void shadow_word_get_bits(ShadowMap *PM, SM_Addr a, U64* mbits) {
   Low* low = word_get_Low_for_reading(PM, a);
-  SizeT idx = a & LOW_BITS;
+  SM_SizeT idx = a & LOW_BITS;
   assert(idx < 262144);
   *mbits = low->bits[a & LOW_BITS];
 }
 
 #define idx2addr(high, mid, low) \
-  ( (Addr)(high << (NUM_LOW_BITS + NUM_MIDDLE_BITS))\
-  | (Addr)(mid  << NUM_LOW_BITS)\
-  | (Addr)low\
+  ( (SM_Addr)(high << (NUM_LOW_BITS + NUM_MIDDLE_BITS))\
+  | (SM_Addr)(mid  << NUM_LOW_BITS)\
+  | (SM_Addr)low\
   )
 
 INLINE
-void shadow_word_iterate(ShadowMap *PM, void (*fncn)(Addr, U64)) {
-  for (SizeT idx = 0; idx < HIGH_COUNT; idx++) {
+void shadow_word_iterate(ShadowMap *PM, void (*fncn)(SM_Addr, U64)) {
+  for (SM_SizeT idx = 0; idx < HIGH_COUNT; idx++) {
     MiddleLowPtr ml = BITS(PM)[idx];
     if (ml.l != DMAP(PM)) {
-      for (SizeT idx_mid = 0; idx_mid < MIDDLE_COUNT; idx_mid++) {
+      for (SM_SizeT idx_mid = 0; idx_mid < MIDDLE_COUNT; idx_mid++) {
         Low *low = ml.m->bits[idx_mid];
-        for (SizeT i = 0; i < LOW_COUNT; i++) {
+        for (SM_SizeT i = 0; i < LOW_COUNT; i++) {
           if (low->bits[i] != 0) {
             fncn(idx2addr(idx,idx_mid,i), (U64)(low->bits[i]));
           }
@@ -68,40 +68,40 @@ void shadow_word_iterate(ShadowMap *PM, void (*fncn)(Addr, U64)) {
 }
 
 INLINE
-void shadow_word_set_bits(ShadowMap *PM, Addr a, U64  mbits) {
+void shadow_word_set_bits(ShadowMap *PM, SM_Addr a, U64  mbits) {
   Low* low = word_get_Low_for_writing(PM, a);
-  SizeT idx = a & LOW_BITS;
+  SM_SizeT idx = a & LOW_BITS;
   assert(idx < 262144);
   low->bits[idx] = mbits;
 }
 
 INLINE
-void shadow_word_mark_bit(ShadowMap *PM, Addr a, U8 offset) {
+void shadow_word_mark_bit(ShadowMap *PM, SM_Addr a, U8 offset) {
   Low* low = word_get_Low_for_writing(PM, a);
-  SizeT idx = a & LOW_BITS;
+  SM_SizeT idx = a & LOW_BITS;
   assert(idx < 262144);
   low->bits[idx] |= (1 << offset);
 }
 
 INLINE
-void shadow_word_unmark_bit(ShadowMap *PM, Addr a, U8 offset) {
+void shadow_word_unmark_bit(ShadowMap *PM, SM_Addr a, U8 offset) {
   Low* low = word_get_Low_for_writing(PM, a);
-  SizeT idx = a & LOW_BITS;
+  SM_SizeT idx = a & LOW_BITS;
   assert(idx < 262144);
   low->bits[idx] &= ~(1 << offset);
 }
 
 INLINE
-void shadow_word_get_bit(ShadowMap *PM, Addr a, U8 offset, U8* bit) {
+void shadow_word_get_bit(ShadowMap *PM, SM_Addr a, U8 offset, U8* bit) {
   Low* low = word_get_Low_for_writing(PM, a);
-  SizeT idx = a & LOW_BITS;
+  SM_SizeT idx = a & LOW_BITS;
   assert(idx < 262144);
   *bit = (low->bits[idx] & (1 << offset)) >> offset;
 }
 
 INLINE
 void shadow_word_initialize_map(ShadowMap* PM) {
-  SizeT i;
+  SM_SizeT i;
 
   // mmap allocate virtual space of the primary map.
   //PM->map = mmap(NULL, HIGH_SIZE, PROT_READ | PROT_WRITE, MAP_ANONYMOUS | MAP_PRIVATE, -1, 0);
@@ -131,7 +131,7 @@ void shadow_word_initialize_map(ShadowMap* PM) {
 }
 
 INLINE
-void shadow_word_initialize_with_memory(Addr mem, ShadowMap* PM) {
+void shadow_word_initialize_with_memory(SM_Addr mem, ShadowMap* PM) {
   // TODO: assert good alignment
   PM->map = (High*)mem;
   DMAP(PM) = (Low*)(((U8*)mem) + HIGH_SIZE);

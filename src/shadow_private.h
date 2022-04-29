@@ -32,7 +32,7 @@ int is_DSM(ShadowMap *PM, SM* sm);
 SM* copy_for_writing(SM* sm);
 
 // Secondary Map getters (maps application address to which SM that address is in)
-SM* get_SM_for_reading(ShadowMap *PM, Addr a);
-SM* get_SM_for_writing(ShadowMap *PM, Addr a);
+SM* get_SM_for_reading(ShadowMap *PM, SM_Addr a);
+SM* get_SM_for_writing(ShadowMap *PM, SM_Addr a);
 
 #endif // shadow_private_h__

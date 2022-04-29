@@ -6,11 +6,11 @@
 #include "shadow-lib.h"
 
 typedef long unsigned int U32;
-void shadow32_get_bits(ShadowMap* PM, Addr a, U32* mbits);
-void shadow32_set_bits(ShadowMap* PM, Addr a, U32  mbits);
-void shadow32_mark_bit   (ShadowMap* PM, Addr a, U8 offset);
-void shadow32_unmark_bit (ShadowMap* PM, Addr a, U8 offset);
-void shadow32_get_bit    (ShadowMap* PM, Addr a, U8 offset, U8* bit);
+void shadow32_get_bits(ShadowMap* PM, SM_Addr a, U32* mbits);
+void shadow32_set_bits(ShadowMap* PM, SM_Addr a, U32  mbits);
+void shadow32_mark_bit   (ShadowMap* PM, SM_Addr a, U8 offset);
+void shadow32_unmark_bit (ShadowMap* PM, SM_Addr a, U8 offset);
+void shadow32_get_bit    (ShadowMap* PM, SM_Addr a, U8 offset, U8* bit);
 void shadow32_initialize_map(ShadowMap* PM);
 void shadow32_destroy_map   (ShadowMap* PM);
 
@@ -25,7 +25,7 @@ void shadow32_destroy_map   (ShadowMap* PM);
 #define map32(n) (&(((ShadowMap*) (PM->map))[n]))
 
 INLINE
-void shadow32_get_bits(ShadowMap* PM, Addr a, U32* mbits) {
+void shadow32_get_bits(ShadowMap* PM, SM_Addr a, U32* mbits) {
   shadow_get_bits(map32(0), a, get_mbits32(0));
   shadow_get_bits(map32(1), a, get_mbits32(1));
   shadow_get_bits(map32(2), a, get_mbits32(2));
@@ -33,7 +33,7 @@ void shadow32_get_bits(ShadowMap* PM, Addr a, U32* mbits) {
 }
 
 INLINE
-void shadow32_set_bits(ShadowMap* PM, Addr a, U32 mbits) {
+void shadow32_set_bits(ShadowMap* PM, SM_Addr a, U32 mbits) {
   shadow_set_bits(map32(0), a, set_mbits32(0));
   shadow_set_bits(map32(1), a, set_mbits32(1));
   shadow_set_bits(map32(2), a, set_mbits32(2));
@@ -53,17 +53,17 @@ void shadow32_set_bits(ShadowMap* PM, Addr a, U32 mbits) {
 
 // Note that upper 3 bits of offset are ignored (offset is really U5)
 INLINE
-void shadow32_mark_bit   (ShadowMap* PM, Addr a, U8 offset) {
+void shadow32_mark_bit   (ShadowMap* PM, SM_Addr a, U8 offset) {
   __shadow32_bit_op(shadow_mark_bit)
 }
 
 INLINE
-void shadow32_unmark_bit (ShadowMap* PM, Addr a, U8 offset) {
+void shadow32_unmark_bit (ShadowMap* PM, SM_Addr a, U8 offset) {
   __shadow32_bit_op(shadow_unmark_bit);
 }
 
 INLINE
-void shadow32_get_bit    (ShadowMap* PM, Addr a, U8 offset, U32* mbits) {
+void shadow32_get_bit    (ShadowMap* PM, SM_Addr a, U8 offset, U32* mbits) {
   if        (offset < 8) {
     shadow_get_bit(map32(3), a, offset, get_mbits32(0));
   } else if (offset < 16) {

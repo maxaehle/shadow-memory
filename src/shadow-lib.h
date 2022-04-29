@@ -26,13 +26,13 @@ typedef struct {
 } ShadowMap;
 
 // Two primary shadow map operations (get and set a byte)
-void shadow_get_bits(ShadowMap* PM, Addr a, U8* mbits);
-void shadow_set_bits(ShadowMap* PM, Addr a, U8  mbits);
+void shadow_get_bits(ShadowMap* PM, SM_Addr a, U8* mbits);
+void shadow_set_bits(ShadowMap* PM, SM_Addr a, U8  mbits);
 
 // set, unset, and get individual bits:
-void shadow_mark_bit   (ShadowMap* PM, Addr a, U8 offset);
-void shadow_unmark_bit (ShadowMap* PM, Addr a, U8 offset);
-void shadow_get_bit    (ShadowMap* PM, Addr a, U8 offset, U8* bit);
+void shadow_mark_bit   (ShadowMap* PM, SM_Addr a, U8 offset);
+void shadow_unmark_bit (ShadowMap* PM, SM_Addr a, U8 offset);
+void shadow_get_bit    (ShadowMap* PM, SM_Addr a, U8 offset, U8* bit);
 
 // Initialize and destroy. Initialize sets up the primary map and any distinguished maps.
 // Destroy frees any memory malloc'd as part of the maps.
@@ -41,16 +41,16 @@ void shadow_destroy_map(ShadowMap* PM);
 
 // Application needs to explicitly determine how system calls are made
 void  shadow_free(void* addr);
-void* shadow_malloc(SizeT size);
-void* shadow_calloc(SizeT nmemb, SizeT size);
+void* shadow_malloc(SM_SizeT size);
+void* shadow_calloc(SM_SizeT nmemb, SM_SizeT size);
 void  shadow_out_of_memory(void);
-void  shadow_memcpy(void* dst, void* src, SizeT size);
+void  shadow_memcpy(void* dst, void* src, SM_SizeT size);
 
 #include "shadow_private.h"
 
 // ----------------------------------------------------------------------------
 INLINE
-Int is_DSM(ShadowMap* PM, SM* sm) {
+SM_Int is_DSM(ShadowMap* PM, SM* sm) {
   return (sm >= (DMAP(PM)[0]) &&
           sm <= (DMAP(PM)[PM->num_distinguished - 1]));
 }
@@ -65,12 +65,12 @@ SM* copy_for_writing(SM* dist_SM) {
 }
 
 INLINE
-SM* get_SM_for_reading(ShadowMap *PM, Addr a) {
+SM* get_SM_for_reading(ShadowMap *PM, SM_Addr a) {
   return MAP(PM)[a >> 16];
 }
 
 INLINE
-SM* get_SM_for_writing(ShadowMap *PM, Addr a) {
+SM* get_SM_for_writing(ShadowMap *PM, SM_Addr a) {
   //SM** sm_p = &PM[a >> 16]; // bits [31..16]
   SM** sm_p = &(MAP(PM)[a >> 16]); //& 0xffff0000]); // bits [31..16]
   if (is_DSM(PM, *sm_p))
@@ -82,31 +82,31 @@ SM* get_SM_for_writing(ShadowMap *PM, Addr a) {
 // Public getters and setters
 
 INLINE
-void shadow_get_bits(ShadowMap *PM, Addr a, U8* mbits) {
+void shadow_get_bits(ShadowMap *PM, SM_Addr a, U8* mbits) {
   SM* sm = get_SM_for_reading(PM, a);
   *mbits = sm->mbits[a & 0x0000ffff];
 }
 
 INLINE
-void shadow_set_bits(ShadowMap *PM, Addr a, U8  mbits) {
+void shadow_set_bits(ShadowMap *PM, SM_Addr a, U8  mbits) {
   SM* sm = get_SM_for_writing(PM, a);
   sm->mbits[a & 0x0000ffff] = mbits;
 }
 
 INLINE
-void shadow_mark_bit(ShadowMap *PM, Addr a, U8 offset) {
+void shadow_mark_bit(ShadowMap *PM, SM_Addr a, U8 offset) {
   SM* sm = get_SM_for_writing(PM, a);
   sm->mbits[a & 0x0000ffff] |= (1 << offset);
 }
 
 INLINE
-void shadow_unmark_bit(ShadowMap *PM, Addr a, U8 offset) {
+void shadow_unmark_bit(ShadowMap *PM, SM_Addr a, U8 offset) {
   SM* sm = get_SM_for_writing(PM, a);
   sm->mbits[a & 0x0000ffff] &= ~(1 << offset);
 }
 
 INLINE
-void shadow_get_bit(ShadowMap *PM, Addr a, U8 offset, U8* bit) {
+void shadow_get_bit(ShadowMap *PM, SM_Addr a, U8 offset, U8* bit) {
   SM* sm = get_SM_for_writing(PM, a);
   *bit = (sm->mbits[a & 0x0000ffff] & (1 << offset)) >> offset;
 }
@@ -115,7 +115,7 @@ void shadow_get_bit(ShadowMap *PM, Addr a, U8 offset, U8* bit) {
 
 INLINE
 void shadow_initialize_map(ShadowMap* PM) {
-  Int i;
+  SM_Int i;
   PM->distinguished_maps = shadow_calloc(NDIST(PM), sizeof(SM*)); // allocate array of distinguished maps
   PM->map = shadow_malloc(KB_64 * sizeof(SM*));
   SM* dist_maps = (SM*)shadow_calloc(sizeof(SM), NDIST(PM));
@@ -129,7 +129,7 @@ void shadow_initialize_map(ShadowMap* PM) {
 
 INLINE
 void shadow_destroy_map(ShadowMap* PM) {
-  Int i;
+  SM_Int i;
   for (i = 0; i < KB_64; i++) {
     if (! is_DSM(PM, MAP(PM)[i]))
       shadow_free(MAP(PM)[i]); // free all allocated (non-distinguished) maps)

@@ -10,8 +10,8 @@ Low* copy_for_writing(Low* dist_Low) {
 }
 
 INLINE
-Low* get_Low_for_reading(ShadowMap *PM, Addr a) {
-  SizeT idx = a >> (NUM_LOW_BITS + NUM_MIDDLE_BITS);
+Low* get_Low_for_reading(ShadowMap *PM, SM_Addr a) {
+  SM_SizeT idx = a >> (NUM_LOW_BITS + NUM_MIDDLE_BITS);
   assert(idx < HIGH_COUNT);
   MiddleLowPtr ml = BITS(PM)[idx];
   if (ml.l == DMAP(PM))
@@ -22,13 +22,13 @@ Low* get_Low_for_reading(ShadowMap *PM, Addr a) {
 }
 
 INLINE
-Low* get_Low_for_writing(ShadowMap *PM, Addr a) {
+Low* get_Low_for_writing(ShadowMap *PM, SM_Addr a) {
   MiddleLowPtr* ml = &(BITS(PM)[a >> (NUM_LOW_BITS + NUM_MIDDLE_BITS)]);
   if (ml->l == DMAP(PM)) {
     ml->m = (Middle*)shadow_malloc(sizeof(Middle));
     memcpy(ml->m, PM->distinguished_middle, sizeof(Middle));
   }
-  SizeT idx = (a & MIDDLE_BITS) >> NUM_LOW_BITS;
+  SM_SizeT idx = (a & MIDDLE_BITS) >> NUM_LOW_BITS;
   assert(idx < MIDDLE_COUNT);
   Low** low = &(ml->m->bits[idx]);
   if (*low == DMAP(PM))
@@ -37,48 +37,48 @@ Low* get_Low_for_writing(ShadowMap *PM, Addr a) {
 }
 
 INLINE
-void shadow_get_bits(ShadowMap *PM, Addr a, U8* mbits) {
+void shadow_get_bits(ShadowMap *PM, SM_Addr a, U8* mbits) {
   Low* low = get_Low_for_reading(PM, a);
-  SizeT idx = a & LOW_BITS;
+  SM_SizeT idx = a & LOW_BITS;
   assert(idx < LOW_COUNT);
   *mbits = low->bits[a & LOW_BITS];
 }
 
 INLINE
-void shadow_set_bits(ShadowMap *PM, Addr a, U8  mbits) {
+void shadow_set_bits(ShadowMap *PM, SM_Addr a, U8  mbits) {
   Low* low = get_Low_for_writing(PM, a);
-  SizeT idx = a & LOW_BITS;
+  SM_SizeT idx = a & LOW_BITS;
   assert(idx < LOW_COUNT);
   low->bits[idx] = mbits;
 }
 
 INLINE
-void shadow_mark_bit(ShadowMap *PM, Addr a, U8 offset) {
+void shadow_mark_bit(ShadowMap *PM, SM_Addr a, U8 offset) {
   Low* low = get_Low_for_writing(PM, a);
-  SizeT idx = a & LOW_BITS;
+  SM_SizeT idx = a & LOW_BITS;
   assert(idx < LOW_COUNT);
   low->bits[idx] |= (1 << offset);
 }
 
 INLINE
-void shadow_unmark_bit(ShadowMap *PM, Addr a, U8 offset) {
+void shadow_unmark_bit(ShadowMap *PM, SM_Addr a, U8 offset) {
   Low* low = get_Low_for_writing(PM, a);
-  SizeT idx = a & LOW_BITS;
+  SM_SizeT idx = a & LOW_BITS;
   assert(idx < LOW_COUNT);
   low->bits[idx] &= ~(1 << offset);
 }
 
 INLINE
-void shadow_get_bit(ShadowMap *PM, Addr a, U8 offset, U8* bit) {
+void shadow_get_bit(ShadowMap *PM, SM_Addr a, U8 offset, U8* bit) {
   Low* low = get_Low_for_writing(PM, a);
-  SizeT idx = a & LOW_BITS;
+  SM_SizeT idx = a & LOW_BITS;
   assert(idx < LOW_COUNT);
   *bit = (low->bits[idx] & (1 << offset)) >> offset;
 }
 
 INLINE
 void shadow_initialize_map(ShadowMap* PM) {
-  SizeT i;
+  SM_SizeT i;
 
   // mmap allocate virtual space of the primary map.
   //PM->map = mmap(NULL, HIGH_SIZE, PROT_READ | PROT_WRITE, MAP_ANONYMOUS | MAP_PRIVATE, -1, 0);
@@ -108,7 +108,7 @@ void shadow_initialize_map(ShadowMap* PM) {
 }
 
 INLINE
-void shadow_initialize_with_memory(Addr mem, ShadowMap* PM) {
+void shadow_initialize_with_memory(SM_Addr mem, ShadowMap* PM) {
   // TODO: assert good alignment
   PM->map = (High*)mem;
   DMAP(PM) = (Low*)(((U8*)mem) + HIGH_SIZE);

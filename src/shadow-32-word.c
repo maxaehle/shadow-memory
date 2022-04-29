@@ -10,16 +10,16 @@ Low* word_copy_for_writing(Low* dist_Low) {
 }
 
 INLINE
-Low* word_get_Low_for_reading(ShadowMap *PM, Addr a) {
-  SizeT idx = a >> NUM_LOW_BITS;
+Low* word_get_Low_for_reading(ShadowMap *PM, SM_Addr a) {
+  SM_SizeT idx = a >> NUM_LOW_BITS;
   assert(idx < HIGH_COUNT);
   Low* l = BITS(PM)[idx];
   return l;
 }
 
 INLINE
-Low* word_get_Low_for_writing(ShadowMap *PM, Addr a) {
-  SizeT idx = a >> NUM_LOW_BITS;
+Low* word_get_Low_for_writing(ShadowMap *PM, SM_Addr a) {
+  SM_SizeT idx = a >> NUM_LOW_BITS;
   assert(idx < HIGH_COUNT);
   Low** low = &(BITS(PM)[idx]);
   if (*low == DMAP(PM))
@@ -28,21 +28,21 @@ Low* word_get_Low_for_writing(ShadowMap *PM, Addr a) {
 }
 
 INLINE
-void shadow_word_get_bits(ShadowMap *PM, Addr a, U32* mbits) {
+void shadow_word_get_bits(ShadowMap *PM, SM_Addr a, U32* mbits) {
   Low* low = word_get_Low_for_reading(PM, a);
-  SizeT idx = a & LOW_BITS;
+  SM_SizeT idx = a & LOW_BITS;
   assert(idx < LOW_COUNT);
   *mbits = low->bits[idx];
 }
 
 INLINE
-void shadow_word_iterate(ShadowMap *PM, void (*fncn)(Addr, U32)) {
-  for (SizeT idx = 0; idx < HIGH_COUNT; idx++) {
+void shadow_word_iterate(ShadowMap *PM, void (*fncn)(SM_Addr, U32)) {
+  for (SM_SizeT idx = 0; idx < HIGH_COUNT; idx++) {
     Low *low = BITS(PM)[idx];
     if (low != DMAP(PM)) {
-      for (SizeT i = 0; i < LOW_COUNT; i++) {
+      for (SM_SizeT i = 0; i < LOW_COUNT; i++) {
         if (low->bits[i] != 0) {
-          fncn((Addr)(idx << NUM_LOW_BITS) | (Addr)i, (U32)(low->bits[i]));
+          fncn((SM_Addr)(idx << NUM_LOW_BITS) | (SM_Addr)i, (U32)(low->bits[i]));
         }
       }
     }
@@ -50,40 +50,40 @@ void shadow_word_iterate(ShadowMap *PM, void (*fncn)(Addr, U32)) {
 }
 
 INLINE
-void shadow_word_set_bits(ShadowMap *PM, Addr a, U32  mbits) {
+void shadow_word_set_bits(ShadowMap *PM, SM_Addr a, U32  mbits) {
   Low* low = word_get_Low_for_writing(PM, a);
-  SizeT idx = a & LOW_BITS;
+  SM_SizeT idx = a & LOW_BITS;
   assert(idx < LOW_COUNT);
   low->bits[idx] = mbits;
 }
 
 INLINE
-void shadow_word_mark_bit(ShadowMap *PM, Addr a, U8 offset) {
+void shadow_word_mark_bit(ShadowMap *PM, SM_Addr a, U8 offset) {
   Low* low = word_get_Low_for_writing(PM, a);
-  SizeT idx = a & LOW_BITS;
+  SM_SizeT idx = a & LOW_BITS;
   assert(idx < LOW_COUNT);
   low->bits[idx] |= (1 << offset);
 }
 
 INLINE
-void shadow_word_unmark_bit(ShadowMap *PM, Addr a, U8 offset) {
+void shadow_word_unmark_bit(ShadowMap *PM, SM_Addr a, U8 offset) {
   Low* low = word_get_Low_for_writing(PM, a);
-  SizeT idx = a & LOW_BITS;
+  SM_SizeT idx = a & LOW_BITS;
   assert(idx < LOW_COUNT);
   low->bits[idx] &= ~(1 << offset);
 }
 
 INLINE
-void shadow_word_get_bit(ShadowMap *PM, Addr a, U8 offset, U32* bit) {
+void shadow_word_get_bit(ShadowMap *PM, SM_Addr a, U8 offset, U32* bit) {
   Low* low = word_get_Low_for_writing(PM, a);
-  SizeT idx = a & LOW_BITS;
+  SM_SizeT idx = a & LOW_BITS;
   assert(idx < LOW_COUNT);
   *bit = (low->bits[idx] & (1 << offset)) >> offset;
 }
 
 INLINE
 void shadow_word_initialize_map(ShadowMap* PM) {
-  SizeT i;
+  SM_SizeT i;
 
   // mmap allocate virtual space of the primary map.
   //PM->map = mmap(NULL, HIGH_SIZE, PROT_READ | PROT_WRITE, MAP_ANONYMOUS | MAP_PRIVATE, -1, 0);
@@ -107,7 +107,7 @@ void shadow_word_initialize_map(ShadowMap* PM) {
 }
 
 INLINE
-void shadow_word_initialize_with_memory(Addr mem, ShadowMap* PM) {
+void shadow_word_initialize_with_memory(SM_Addr mem, ShadowMap* PM) {
   // TODO: assert good alignment
   PM->map = (High*)mem;
   DMAP(PM) = (Low*)(((U8*)mem) + HIGH_SIZE);

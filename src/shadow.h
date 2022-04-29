@@ -9,9 +9,9 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 
-typedef int Int;
-typedef size_t SizeT;
-typedef unsigned long int Addr;
+typedef int SM_Int;
+typedef size_t SM_SizeT;
+typedef unsigned long int SM_Addr;
 #include "shadow-lib.h"
 
 void  shadow_free(void* addr) { VG_(free)(addr); }

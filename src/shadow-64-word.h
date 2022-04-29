@@ -7,17 +7,17 @@
 #include <stdio.h>    // perror()
 
 typedef int Int;
-typedef size_t SizeT;
-typedef unsigned long long int Addr;
+typedef size_t SM_SizeT;
+typedef unsigned long long int SM_Addr;
 typedef unsigned char U8;
 typedef unsigned long long int U64;
 
 // Application needs to explicitly determine how system calls are made
 void  shadow_free(void* addr);
-void* shadow_malloc(SizeT size);
-void* shadow_calloc(SizeT nmemb, SizeT size);
+void* shadow_malloc(SM_SizeT size);
+void* shadow_calloc(SM_SizeT nmemb, SM_SizeT size);
 void  shadow_out_of_memory();
-void  shadow_memcpy(void* dst, void* src, SizeT size);
+void  shadow_memcpy(void* dst, void* src, SM_SizeT size);
 
 // >>> hex(2**35 - 1)
 //#define LOW_HALF_BITS 0x00000007ffffffff
@@ -74,16 +74,16 @@ typedef struct {
 Low* word_copy_for_writing(Low* low);
 
 // Secondary Map getters (maps application address to which Low that address is in)
-Low* word_get_Low_for_reading(ShadowMap *PM, Addr a);
-Low* word_get_Low_for_writing(ShadowMap *PM, Addr a);
+Low* word_get_Low_for_reading(ShadowMap *PM, SM_Addr a);
+Low* word_get_Low_for_writing(ShadowMap *PM, SM_Addr a);
 
-extern void shadow_word_get_bits(ShadowMap *PM, Addr a, U64* mbits);
-extern void shadow_word_set_bits(ShadowMap *PM, Addr a, U64  mbits);
-extern void shadow_word_mark_bit(ShadowMap *PM, Addr a, U8 offset);
-extern void shadow_word_unmark_bit(ShadowMap *PM, Addr a, U8 offset);
-extern void shadow_word_get_bit(ShadowMap *PM, Addr a, U8 offset, U8* bit);
+extern void shadow_word_get_bits(ShadowMap *PM, SM_Addr a, U64* mbits);
+extern void shadow_word_set_bits(ShadowMap *PM, SM_Addr a, U64  mbits);
+extern void shadow_word_mark_bit(ShadowMap *PM, SM_Addr a, U8 offset);
+extern void shadow_word_unmark_bit(ShadowMap *PM, SM_Addr a, U8 offset);
+extern void shadow_word_get_bit(ShadowMap *PM, SM_Addr a, U8 offset, U8* bit);
 extern void shadow_word_initialize_map(ShadowMap* PM);
-extern void shadow_word_initialize_with_memory(Addr mem, ShadowMap* PM);
+extern void shadow_word_initialize_with_memory(SM_Addr mem, ShadowMap* PM);
 extern void shadow_word_initialize_with_mmap(ShadowMap* PM);
 extern void shadow_word_destroy_map(ShadowMap* PM);
 
