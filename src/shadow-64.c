@@ -1,5 +1,7 @@
 #include "shadow-64.h"
 
+void perror(const char* s){ VG_(printf)("perror %d", *s); }
+
 INLINE
 Low* copy_for_writing(Low* dist_Low) {
   Low* new_Low = (Low*)shadow_malloc(sizeof(Low));

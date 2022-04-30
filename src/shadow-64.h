@@ -1,5 +1,10 @@
 #ifndef shadow_64_h__
 #define shadow_64_h__
+
+#include "pub_tool_basics.h"
+#include "pub_tool_tooliface.h"
+#include "pub_tool_mallocfree.h"
+
 #include <stddef.h> 	// size_t
 #include <assert.h> 	// assert()
 #include <string.h> 	// memcpy()
