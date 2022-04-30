@@ -1,6 +1,10 @@
 #ifndef shadow_h__
 #define shadow_h__
 
+#include "pub_tool_basics.h"
+#include "pub_tool_tooliface.h"
+#include "pub_tool_mallocfree.h"
+
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
