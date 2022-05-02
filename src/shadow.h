@@ -18,13 +18,11 @@ typedef size_t SM_SizeT;
 typedef unsigned long int SM_Addr;
 #include "shadow-lib.h"
 
-void  shadow_free(void* addr) { VG_(free)(addr); }
-void *shadow_malloc(size_t size) { return VG_(malloc)("Test",size); }
-void *shadow_calloc(size_t nmemb, size_t size) { return VG_(calloc)("test", nmemb, size); }
-void  shadow_memcpy(void* dst, void* src, size_t size) { VG_(memcpy)(dst,src,size); }
-void  shadow_out_of_memory() {
-  VG_(printf)("ERROR: Ran out of memory while allocating shadow memory.\n");
-	VG_(exit)(1);
-}
+void  shadow_free(void* addr);
+void* shadow_malloc(SM_SizeT size);
+void* shadow_calloc(SM_SizeT nmemb, SM_SizeT size);
+void  shadow_out_of_memory();
+void  shadow_memcpy(void* dst, void* src, SM_SizeT size);
+
 
 #endif // shadow_h__
