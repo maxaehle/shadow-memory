@@ -1,3 +1,14 @@
+#ifndef __GNUC__
+  #error "Only tested with GCC."
+#endif
+
+#if __x86_64__
+#else
+#define BUILD_32BIT
+#endif
+
+#ifndef BUILD_32BIT
+
 #include "shadow-64.h"
 
 INLINE
@@ -83,7 +94,7 @@ void shadow_initialize_map(ShadowMap* PM) {
   // mmap allocate virtual space of the primary map.
   //PM->map = mmap(NULL, HIGH_SIZE, PROT_READ | PROT_WRITE, MAP_ANONYMOUS | MAP_PRIVATE, -1, 0);
   if (PM->map == MAP_FAILED) {
-    perror("Failed to allocate primary map.");
+    //perror("Failed to allocate primary map.");
     return;
   }
 
@@ -119,7 +130,8 @@ void shadow_initialize_with_memory(SM_Addr mem, ShadowMap* PM) {
 
 INLINE
 void shadow_initialize_with_mmap(ShadowMap* PM) {
-  PM->map = (High*)mmap(NULL, HIGH_SIZE, PROT_READ | PROT_WRITE, MAP_ANONYMOUS | MAP_PRIVATE, -1, 0);
+  //PM->map = (High*)mmap(NULL, HIGH_SIZE, PROT_READ | PROT_WRITE, MAP_ANONYMOUS | MAP_PRIVATE, -1, 0);
+  PM->map = (High*) shadow_calloc(1, HIGH_SIZE);
   DMAP(PM) = (Low*) shadow_calloc(1, LOW_SIZE);
   PM->distinguished_middle = (Middle*) shadow_malloc(MID_SIZE);
   shadow_initialize_map(PM);
@@ -130,3 +142,4 @@ void shadow_destroy_map(ShadowMap* PM) {
 
 }
 
+#endif
