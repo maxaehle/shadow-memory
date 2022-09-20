@@ -10,8 +10,8 @@
 #include <stdio.h>
 #include <stddef.h>
 #include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
+//#include <sys/stat.h>
+//#include <fcntl.h>
 
 typedef int SM_Int;
 typedef size_t SM_SizeT;
